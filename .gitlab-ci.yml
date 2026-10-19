@@ -1,0 +1,21 @@
+image: node:22
+
+stages:
+  - verify
+
+verify:
+  stage: verify
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+  script:
+    - npm ci --cache .npm --prefer-offline
+    - npm test
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 7 days
