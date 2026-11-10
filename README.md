@@ -1,12 +1,14 @@
 # Forma / CMS Light
 
-Локальный MVP agent-driven CMS для небольших сайтов. Владелец редактирует контент вручную или просит ИИ добавить новую функцию: форму, интерактивный блок, CSS/JavaScript или webhook-интеграцию. Изменения сначала сохраняются в черновик, затем публикуются отдельным действием.
+English | [Русский](README.ru.md)
 
-Подробный [план продукта и архитектура](docs/product-plan.md) описывает подходы CMS, целевые адаптеры, runner, GitLab и этапы развития.
+A local MVP of an agent-driven CMS for small websites. Owners can edit content manually or ask AI to add a form, an interactive block, CSS/JavaScript, or a webhook integration. Changes are saved to a draft first and published through a separate action.
 
-## Запуск
+The detailed [product and architecture plan](docs/product-plan.md) (in Russian) covers the CMS approach, planned adapters, the runner, GitLab, and development stages.
 
-Нужны Node.js 22.12+ и npm.
+## Getting started
+
+Requires Node.js 22.12+ and npm.
 
 ```sh
 npm ci
@@ -14,8 +16,8 @@ npm run dev
 ```
 
 - Studio: http://127.0.0.1:4310
-- Изолированный preview: http://127.0.0.1:4311/preview
-- Локально опубликованный сайт: http://127.0.0.1:4311/published
+- Isolated preview: http://127.0.0.1:4311/preview
+- Locally published website: http://127.0.0.1:4311/published
 
 ```sh
 npm test
@@ -23,75 +25,75 @@ npm run build
 npm start
 ```
 
-Сервер слушает только loopback. Повторный запуск с тем же каталогом данных блокируется; после аварийного завершения удаляйте `.data/.forma-instance.lock` только убедившись, что прежний процесс остановлен. Это однопользовательский локальный инструмент, не публичный SaaS. Оставьте порт Studio 4310 для OAuth callback. Переменные из `.env.example` нужно экспортировать в окружение процесса; файл `.env` автоматически не загружается.
+The server listens on loopback only. A second instance using the same data directory is blocked. After a crash, remove `.data/.forma-instance.lock` only after confirming that the previous process has stopped. This is a local, single-user tool, not a public SaaS. Keep Studio on port 4310 for the OAuth callback. Export variables from `.env.example` into the process environment; `.env` files are not loaded automatically.
 
-## Что работает
+## Implemented features
 
-- Vue Studio с настоящим preview, выбором секций, desktop/mobile режимами.
-- Ручное редактирование текста, изображений, карточек, полей форм и HTML-блоков.
-- Редактор исходников `content.json`, `styles.css`, `script.js`.
-- Чат с реальным Responses API и инструментами чтения/изменения исходников. Нет подставных AI-ответов и автоматического платного fallback.
-- Подключение собственного ChatGPT через официальный Sign in with ChatGPT либо API-ключа OpenAI.
-- Вложения: PNG/JPEG/WebP, PDF, TXT, Markdown, CSV, JSON; до 10 МБ на файл. Текст читается постранично, изображения и PDF передаются как мультимодальный ввод.
-- Серверные черновики, проверка ревизий, атомарное применение изменений агента, отмена задач.
-- Формы с реальным сохранением заявок, валидацией и ограничением частоты.
-- HTTPS webhook-интеграции с серверным Bearer-секретом. Новые подключения агента выключены до проверки владельцем.
-- Пользовательские скрипты и интерактивность. Скрипты интеграций включаются отдельно и работают в опубликованной версии.
-- Локальная публикация, история версий, восстановление в черновик.
-- ZIP-экспорт самостоятельных стартовых проектов Nuxt и Next с редактируемыми исходниками и медиа.
+- Vue Studio with a live preview, section selection, and desktop/mobile views.
+- Manual editing of text, images, cards, form fields, and HTML blocks.
+- A source editor for `content.json`, `styles.css`, and `script.js`.
+- Chat connected to the real Responses API, with tools for reading and editing source files. No simulated AI responses or automatic paid fallback.
+- Connection to your own ChatGPT account through official Sign in with ChatGPT, or through an OpenAI API key.
+- Attachments: PNG/JPEG/WebP, PDF, TXT, Markdown, CSV, and JSON, up to 10 MB per file. Text is read in pages; images and PDFs are sent as multimodal input.
+- Server-side drafts, revision checks, atomic application of agent changes, and task cancellation.
+- Forms with persistent submissions, validation, and rate limiting.
+- HTTPS webhook integrations with a server-side Bearer secret. New integrations created by the agent remain disabled until the owner reviews them.
+- Custom scripts and interactivity. Integration scripts are enabled separately and run in the published version.
+- Local publishing, version history, and restoration to a draft.
+- ZIP export of standalone Nuxt and Next starter projects with editable source files and media.
 
-Для проверки без ИИ нажмите «Добавить форму» в интерфейсе. Это явно обозначенный шаблон, не результат работы модели. Опубликуйте локально, откройте опубликованный сайт, отправьте форму и найдите запись в разделе заявок. Предпросмотр не отправляет реальные заявки.
+To try the workflow without AI, click «Добавить форму» (Add a form) in the interface. This is explicitly labeled as a template rather than a model-generated result. Publish locally, open the published website, submit the form, and find the saved entry in the submissions section. The preview does not send real submissions.
 
-## Подключение ИИ
+## Connecting AI
 
-В панели откройте настройки ИИ. Вход ChatGPT запускает собственную регистрацию приложения с PKCE, `state`, `nonce`, проверкой JWKS/ID token и выданных разрешений. Токены хранятся только на сервере в `.data/auth.json` с правами `0600`, обновляются последовательно. Наличие подписки не гарантирует доступ конкретной модели; каталог и разрешения проверяются через OpenAI.
+Open the AI settings in Studio. ChatGPT sign-in performs application registration with PKCE, `state`, `nonce`, JWKS/ID token verification, and granted-permission checks. Tokens are stored only on the server in `.data/auth.json`, with `0600` permissions, and refreshed sequentially. A subscription does not guarantee access to a particular model; the model catalog and permissions are checked through OpenAI.
 
-Используется публичный Responses API, `store: false`, `stream: true`, bounded tool loop. Разрешены только три исходных файла сайта и декларации интеграций. Модель не получает shell, GitLab credentials, ключи webhook или доступ к произвольным файлам компьютера. Максимум 12 модельных запросов и 48 вызовов инструментов на задачу. Завершение потока и валидация обязательны до применения изменений.
+The implementation uses the public Responses API with `store: false`, `stream: true`, and a bounded tool loop. Access is limited to the three website source files and integration declarations. The model has no shell access, GitLab credentials, webhook keys, or access to arbitrary files on the computer. Each task is limited to 12 model requests and 48 tool calls. The stream must complete and validation must pass before changes are applied.
 
-Live OAuth и inference требуют входа владельца. Тесты проверяют протокол на замоканных ответах и подписанных тестовых токенах; они не означают проверку реального аккаунта или расходование его лимита.
+Live OAuth and inference require the owner to sign in. Tests check the protocol using mocked responses and signed test tokens; they do not verify a real account or consume its allowance.
 
-Официальные источники:
+Official references:
 
-- [SIWC: регистрация и OAuth](https://developers.openai.com/siwc/token-sharing-open-source/sign-in)
-- [Модели и inference](https://developers.openai.com/siwc/token-sharing-open-source/models-and-inference)
-- [Аккаунты и обновление токенов](https://developers.openai.com/siwc/token-sharing-open-source/profiles-and-sessions)
-- [Текущие ограничения](https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations)
+- [SIWC registration and OAuth](https://developers.openai.com/siwc/token-sharing-open-source/sign-in)
+- [Models and inference](https://developers.openai.com/siwc/token-sharing-open-source/models-and-inference)
+- [Accounts and token refresh](https://developers.openai.com/siwc/token-sharing-open-source/profiles-and-sessions)
+- [Current limitations](https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations)
 
-Документированный OSS OAuth путь применяется к локальному/open-source сценарию. Для коммерческого или hosted продукта необходимо отдельно подтвердить доступ у OpenAI. Репозиторий содержит прототип; лицензия и модель распространения ещё не определены.
+The documented OSS OAuth flow applies to local/open-source use. Access for a commercial or hosted product needs to be confirmed separately with OpenAI. This repository contains a prototype; its license and distribution model have not yet been decided.
 
-## Файлы и публикация
+## Files and publishing
 
-`server/site.ts` — единый рендерер сайта и экспортов. JSON хранит стабильные ID секций и редактируемые поля. Новые клиентские функции добавляются через `custom` HTML-секции, CSS и JavaScript. Форма — отдельный тип секции с декларативными полями.
+`server/site.ts` provides the shared renderer for the website and exports. JSON stores stable section IDs and editable fields. New client-side functionality is added through `custom` HTML sections, CSS, and JavaScript. Forms are a separate section type with declarative fields.
 
-`server/store.ts` сохраняет состояние атомарно. Мутации сериализованы; агент работает с копией и применяет её только при совпадении исходной ревизии. Публикация сохраняет неизменяемый снимок исходников и интеграций. Восстановление версии меняет только черновик: повторная публикация остаётся явным действием.
+`server/store.ts` saves state atomically. Mutations are serialized; the agent works on a copy and applies it only if the original revision still matches. Publishing saves an immutable snapshot of the source files and integrations. Restoring a version changes only the draft; publishing again remains an explicit action.
 
-Состояние, токены, ключ шифрования секретов, вложения и заявки находятся в `.data/`. Для резервной копии сохраняйте всю эту папку защищённым способом. `.credentials/`, `.data/` и `.env` исключены из Git. Webhook-секреты зашифрованы и привязаны к идентификатору подключения и адресу назначения. Ключ шифрования хранится локально; это защита от случайного раскрытия, не полноценный внешний vault.
+State, tokens, the secret-encryption key, attachments, and submissions are stored in `.data/`. Back up the entire directory securely. `.credentials/`, `.data/`, and `.env` are excluded from Git. Webhook secrets are encrypted and bound to the integration ID and destination URL. The encryption key is stored locally; this protects against accidental disclosure but is not a full external vault.
 
-Публикация MVP создаёт доступную на локальной машине версию. Внешний хостинг, домен и CI/CD сайта пока не подключены. GitLab версионирует сам продукт; отдельные Git-ветки и репозитории клиентских сайтов — следующий этап.
+Publishing in the MVP creates a version accessible on the local machine. External hosting, domains, and website CI/CD are not connected yet. GitLab versions the product itself; separate branches and repositories for customer websites are planned for a later stage.
 
-## Nuxt и Next
+## Nuxt and Next exports
 
-В меню экспорта скачайте ZIP. Он содержит готовый starter с исходниками контента, общим рендерером, CSS/JS и изображениями. Это переносимый стартовый проект, не автоматическое подключение любого существующего приложения и не двусторонняя синхронизация с CMS.
+Download a ZIP from the export menu. It contains a starter project with content source files, the shared renderer, CSS/JS, and images. It is a portable starting point, not automatic integration with any existing application or bidirectional synchronization with the CMS.
 
-Экспорты проверены production-сборкой: Nuxt 4.6.2 и Next 16.4.2 на Node 22.22.3. Для Nuxt нужен Node из диапазона, указанного в экспортированном `package.json`; `.nvmrc` задаёт проверенную версию. У зависимостей Nuxt остаются upstream audit-предупреждения `braces`/`node-forge`, описанные внутри ZIP; аудит Next чистый на момент проверки.
+Exports have been verified with production builds: Nuxt 4.6.2 and Next 16.4.2 on Node 22.22.3. Nuxt requires a Node version within the range specified in the exported `package.json`; `.nvmrc` specifies the verified version. Nuxt dependencies still have upstream `braces`/`node-forge` audit warnings documented inside the ZIP; the Next audit was clean at the time of verification.
 
-Формы экспортированного сайта требуют собственного публичного backend endpoint, описанного в README внутри ZIP. Токены локальных форм и webhook-секреты не экспортируются. Перед включением внешних браузерных интеграций нужно явно настроить переменную окружения экспортированного проекта.
+Forms on an exported website require your own public backend endpoint, described in the README inside the ZIP. Local form tokens and webhook secrets are not exported. Before enabling external browser integrations, explicitly configure the exported project's environment variable.
 
-## Границы текущего MVP
+## Current MVP limits
 
-- Один локальный сайт и одна страница с секциями; без командной авторизации, биллинга и многопользовательской изоляции.
-- ИИ изменяет настоящие JSON/HTML/CSS/JS исходники. Прямое изменение произвольных Vue/TSX серверных модулей, установка пакетов и запуск shell потребуют отдельного sandbox runner.
-- Preview ограничен CSP: запрещены внешние соединения, внешние скрипты и отправка форм. Клиентский `script.js` выполняется в изолированном iframe/origin; это не серверная sandbox для произвольных приложений.
-- Проверяются схема и синтаксис JavaScript. Полноценный браузерный прогон каждой генерации и автоматический анализ безопасности опубликованного JS — следующий этап. Владелец проверяет результат до публикации.
-- PDF передаётся модели напрямую. DOCX/XLSX/OCR, антивирусная проверка и большие документы пока не поддерживаются.
-- Webhooks: HTTPS/443, только публичный IPv4, DNS адрес фиксируется для запроса, редиректы запрещены. Повторные доставки и очередь dead-letter пока не реализованы; статус доставки сохраняется в заявке.
+- One local website and one page made of sections; no team authorization, billing, or multi-user isolation.
+- AI edits real JSON/HTML/CSS/JS source files. Direct changes to arbitrary Vue/TSX server modules, package installation, and shell execution require a separate sandbox runner.
+- Preview is restricted by CSP: external connections, external scripts, and form submissions are blocked. Client-side `script.js` runs in an isolated iframe/origin; this is not a server sandbox for arbitrary applications.
+- Schema and JavaScript syntax are validated. A full browser check of every generation and automated security analysis of published JavaScript are planned for a later stage. The owner reviews the result before publishing.
+- PDFs are passed directly to the model. DOCX/XLSX/OCR, antivirus checks, and large documents are not supported yet.
+- Webhooks use HTTPS/443 and public IPv4 only. The DNS address is pinned for the request, and redirects are blocked. Retries and a dead-letter queue are not implemented yet; delivery status is saved with the submission.
 
-## Следующий этап
+## Next steps
 
-1. Проверить реальные OAuth и AI-сценарии с аккаунтом владельца.
-2. Добавить страницы/маршруты и расширяемые схемы компонентов.
-3. Подключить GitLab-репозитории клиентских сайтов и адаптеры живых Nuxt/Next проектов.
-4. Поднять отдельный runner для установки зависимостей, сборки и изменений Vue/TSX/backend-кода.
-5. Добавить облачную публикацию, очередь webhook-доставок и инфраструктуру секретов.
+1. Verify live OAuth and AI workflows with the owner's account.
+2. Add pages/routes and extensible component schemas.
+3. Connect GitLab repositories for customer websites and adapters for live Nuxt/Next projects.
+4. Add a separate runner for dependency installation, builds, and Vue/TSX/backend changes.
+5. Add cloud publishing, a webhook delivery queue, and secret-management infrastructure.
 
-GitLab CI выполняет тесты и production build Studio. Для него достаточно обычного Linux Docker runner с Node 22 и доступом к npm. Credentials пользовательских сайтов в CI не требуются.
+This GitHub portfolio copy excludes CI configuration and deployment files. Run the checks above locally. The original GitLab configuration remains in the working project; the CMS's local publishing and export features are preserved.
